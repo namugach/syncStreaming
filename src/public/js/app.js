@@ -1,185 +1,145 @@
 const 
 socket = io(),
 app = {
-	handle: {
-		changeBgColor(e) {
-			const targetStyle = e.target.style;
-			targetStyle.backgroundColor = targetStyle.backgroundColor === "red" ? "#333" : "red";
-		},
-		seekedHandle(e) {
-			socket.emit("seeked", e.target.currentTime);
+	util: {
+		cut(source, string) {
+			source = source.split(string)
+			source.shift();
+			return source[0];
 		}
 	},
-	get: {
-		bgColor(e) {
-			return e.target.style.backgroundColor;
+	state: {
+		isFirst: true
+	},
+	elem: {
+		video: document.getElementById("videoDisplay"),
+		select: document.getElementById("videoList")
+	},
+	methods: {
+		setIsFirstEmit(emitType) {
+			const root = app;
+			root.state.isFirst 
+			? socket.emit(emitType, root.elem.video.currentTime)
+			: root.state.isFirst = true;
 		},
-		videoElem() {
-			return document.getElementById("videoDisplay");
+		setIsFirstVideoElemTimeAction(info, type) {
+			const root = app, videoElem = root.elem.video;
+			root.state.isFirst = info.isFirst;
+			videoElem.currentTime = info.time;
+			videoElem[type]();
+		},
+		setVideoListSelect() {
+			const root = app, videoElem = root.elem.video, videoList = root.elem.select,
+			selectVideoElemValue = root.util.cut(
+				videoElem.src, `${videoElem.baseURI}content/`
+			),
+			selectVideoElem = Array.from(videoList.children)
+			.filter(elem => elem.value === selectVideoElemValue)[0];
+			selectVideoElem.selected = true;
 		}
-	}
-},
-videoElem = app.get.videoElem();
-
-
-socket.emit("join");
-
-box.addEventListener("click", e => {
-	e.preventDefault();
-	app.handle.changeBgColor(e);
-	socket.emit("click", {
-		id: e.target.id,
-		color: app.get.bgColor(e)
-	});
-})
-
-socket.on("boxClick", info => {
-	const box = document.getElementById(info.id);
-	box.style.backgroundColor = info.color;
-});
-
-
-if(true) {
-	function playHandle(e) {
-		socket.emit("play", () => {
-			const videoElem = document.getElementById("videoElem");
-			// videoElem.play();
-			console.log(1);
-		});
-	}
-	function pauseHandle(e) {
-		socket.emit("pause", () => {
-			const videoElem = document.getElementById("videoElem");
-			console.log(2);
-			// videoElem.pause();
-		});
-	}
-	videoElem.addEventListener("play", playHandle);
-	videoElem.addEventListener("pause", pauseHandle);
-	socket.on("play", () => {
-		console.log("this is broadcast play");
-		videoElem.play();
-	});
-	socket.on("pause", () => {
-		console.log("this is broadcast pause");
-		videoElem.pause();
-	});
-}
-
-if(false) {
-	function playHandle(e) {
-		socket.emit("play");
-	}
-	function pauseHandle(e) {
-		socket.emit("pause");
-	}
-	
-	function onPlay() {
-		if(videoElem.paused) {
-			videoElem.play();
-		}
-	}
-	function onPaues() {
-		if(!videoElem.paused) {
-			videoElem.pause();
-		}
-	}
-	videoElem.addEventListener("play", playHandle);
-	socket.on("play", onPlay);
-	
-	videoElem.addEventListener("pause", pauseHandle);
-	socket.on("pause", onPaues);
-}
-
-
-
-if(false) {
-	videoElem.addEventListener("seeked", app.handle.seekedHandle);
-	
-	if(false) {
-		socket.on("seeked", time => {
-			const videoElem = app.get.videoElem();
-			videoElem.pause();
-			setTimeout(() => {
-				videoElem.currentTime = time;
-			}, 200)
-			// new Promise((res, rej) => {
-			// 	res();
-			// }).then(() => {
-			// });
-			// videoElem.paused
-		});
-	}
-	
-	if(false) {
-		socket.on("seeked", time => {
-			const videoElem = app.get.videoElem();
-			videoElem.pause();
-			if(time === undefined) {
-				videoElem.addEventListener("seeked", app.handle.seekedHandle);
-			}
-			else {
-				videoElem.removeEventListener("seeked", app.handle.seekedHandle);
-				videoElem.currentTime = time;
-			}
-		});
-	}
-}
-
-
-if(false) {
-	videoElem.addEventListener("seeked", e => {
-		socket.emit("seeked", {
-			id: socket.id,
-			time: e.target.currentTime
-		});
-	});
-	socket.on("seeked", info => {
-		if(info.isUserControl) {
-			app.get.videoElem().currentTime = info.time;
-		}
-	});
-}
-
-if(false) {
-	if(false) {
-		function seekedHandle(e) {
-			socket.emit("seeked", {
-				count: 0, 
-				time: e.target.currentTime
-			});
-		}
-		videoElem.addEventListener("seeked", seekedHandle);
-		socket.on("seeked", info => {
-			info.count++;
-			console.log(info.count);
-			if(info.count <= 6) {
-				switch(info.count) {
-					case 2:
-						videoElem.pause();
-						videoElem.removeEventListener("seeked", seekedHandle);
-						videoElem.currentTime = info.time;
-					break;
-					// case 4:
-					case 6:
-						videoElem.addEventListener("seeked", seekedHandle);
-					break;
+	},
+	event: {
+		methods: {
+			changeBgColor(e) {
+				const targetStyle = e.target.style;
+				targetStyle.backgroundColor = targetStyle.backgroundColor === "red" ? "#333" : "red";
+			},
+			bgColor(e) {
+				return e.target.style.backgroundColor;
+			},
+		},
+		set: {
+			box: {
+				click() {
+					const root = app;
+					box.addEventListener("click", e => {
+						e.preventDefault();
+						root.event.methods.changeBgColor(e);
+						socket.emit("click", {
+							id: e.target.id,
+							color: root.event.methods.bgColor(e)
+						});
+					})
+					
+					socket.on("boxClick", info => {
+						const box = document.getElementById(info.id);
+						box.style.backgroundColor = info.color;
+					});
 				}
-				socket.emit("seeked", info);
-			}
-		});
-	}
-	
-	function seekedHandle(e) {
-		socket.emit("seeked", e.target.currentTime);
-	}
-	videoElem.addEventListener("seeked", seekedHandle);
-	async function onSeeked(time) {
-		await videoElem.pause();
-		// videoElem.removeEventListener("seeked", seekedHandle);
-		videoElem.currentTime = time;
-		// videoElem.addEventListener("seeked", seekedHandle);
-	}
-	socket.on("seeked", onSeeked);
-}
+			},
+			video: {
+				play() {
+					const root = app, videoElem = root.elem.video;
 
+					videoElem.addEventListener("play", e => {
+						console.log(1, "play");
+						root.methods.setIsFirstEmit("play");
+					});
+					socket.on("play", info => {
+						root.methods.setIsFirstVideoElemTimeAction(info, "play");
+					});
+				},
+				pause() {
+					const root = app, videoElem = root.elem.video;
+
+					videoElem.addEventListener("pause", e => {
+						console.log(2, "pause");
+						root.methods.setIsFirstEmit("pause");
+					});
+					socket.on("pause", info => {
+						root.methods.setIsFirstVideoElemTimeAction(info, "pause");
+					});
+				},
+				/**
+				 * 이거 넣으면 싱크가 묘하게 맞질 않네
+				 */
+				seeked() {
+					const root = app, videoElem = root.elem.video;
+
+					videoElem.addEventListener("seeked", e => {
+						console.log(3, "seeked");
+						root.methods.setIsFirstEmit("seeked");
+					});
+					socket.on("seeked", info => {
+						const root = app, videoElem = root.elem.video;
+						root.state.isFirst = info.isFirst;
+						videoElem.currentTime = info.time;
+					});
+				},
+				main() {
+					this.play();
+					this.pause();
+					this.seeked();
+				}
+			},
+			select: {
+				change() {
+					const root = app, 
+					videoList = root.elem.select, 
+					videoElem = root.elem.video;
+					videoList.addEventListener("change", e => {
+						const value = `${location.href}content/${e.target.value}`
+						videoElem.src = value;
+						socket.emit("change", value);
+					});
+					
+					socket.on("change", value => {
+						videoElem.src = value;
+						root.methods.setVideoListSelect();
+					});
+				}
+			}
+		},
+		main() {
+			this.set.box.click();
+			this.set.video.main();
+			this.set.select.change();
+		}
+	},
+
+	main() {
+		this.methods.setVideoListSelect();
+		this.event.main();
+	}
+}
+app.main();

@@ -14,9 +14,12 @@
 </head>
 <body>
 	<div id="box"></div>
-	<video id="videoDisplay" controls muted="muted" style="width: 100%;">
-		<source src="content/2.mp4">
-	</video>
+	<video id="videoDisplay" src="content/2.mp4" controls muted="muted" style="width: 100%;"></video>
+	<select id="videoList">
+		<option value="1.mp4">1.mp4</option>
+		<option value="2.mp4">2.mp4</option>
+		<option value="3.mp4">3.mp4</option>
+	</select>
 	<script src="/socket.io/socket.io.js"></script>
 	<script src="js/app.js"></script>
 </body>
