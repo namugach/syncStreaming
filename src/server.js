@@ -1,6 +1,9 @@
+import fs from "fs";
 import http from "http";
 import SocketIO from "socket.io";
 import express from "express";
+
+
 
 const server = {
 	instance: {
@@ -25,6 +28,17 @@ const server = {
 	set: {
 		socket: {
 			on: {
+				connection: {
+					main(socket) {
+						// done([1,2,3,4]);
+						socket.on("disconnec", done => {
+							const dir = `${__dirname}/public/content`;
+							fs.readdir(dir, (err, list) => {
+								done(list);
+							});
+						});
+					}
+				},
 				box: {
 					click(socket) {
 						socket.on("click", info => {
@@ -35,7 +49,7 @@ const server = {
 				video: {
 					add(socket, type) {
 						socket.on(type, time => {
-							console.log(type);
+							// console.log(type);
 							socket.broadcast.emit(type, {
 								time, isFirst: false
 							});
@@ -60,6 +74,7 @@ const server = {
 			main() {
 				const root = server;
 				root.instance.wsServer.on("connection", socket => {
+					this.on.connection.main(socket);
 					this.on.box.click(socket);
 					this.on.video.add(socket, "play");
 					this.on.video.add(socket, "pause");

@@ -9,14 +9,29 @@ app = {
 		}
 	},
 	state: {
-		isFirst: true
+		prop: {
+			isFirst: true,
+			volume: 1,
+		},
+		get isFirst() {
+			return this.prop.isFirst;
+		},
+		set isFirst(value) {
+			this.prop.isFirst = value;
+		},
+		get volume() {
+			return this.prop.volume;
+		},
+		set volume(value) {
+			this.prop.volume = value;
+		},
 	},
 	elem: {
 		video: document.getElementById("videoDisplay"),
 		select: document.getElementById("videoList"),
 		fullScreenButton: document.getElementById("fullScreenButton"),
 		reloadButton: document.getElementById("reloadButton"),
-		volumeBarButton: document.getElementById("volumeBarButton"),
+		volumeBar: document.getElementById("volumeBar"),
 		soundSwitchButton: document.getElementById("soundSwitchButton"),
 		soundSwitchValue: document.getElementById("soundSwitchValue"),
 		captionButton: document.getElementById("captionButton")
@@ -39,9 +54,9 @@ app = {
 			const root = app, videoElem = root.elem.video, videoList = root.elem.select,
 			selectVideoElemValue = root.util.cut(
 				videoElem.src, `${videoElem.baseURI}content/`
-			),
+			);
 			selectVideoElem = Array.from(videoList.children)
-			.filter(elem => elem.value === selectVideoElemValue)[0];
+			.filter(elem => elem.value === decodeURI(selectVideoElemValue))[0];
 			selectVideoElem.selected = true;
 		},
 		reloadEmit() {
@@ -76,6 +91,56 @@ app = {
 			}
 		},
 		set: {
+			connection: {
+				regex: {
+					mp4Regex: /\.mp4$/,
+					is: {
+						mp4Regex(string) {
+							const root = app, parent = root.event.set.connection.regex;
+							return parent.mp4Regex.test(string);
+						}
+					}
+				},
+				methods: {
+					createtOptionElem(data) {
+						let option = document.createElement("option");
+						option.value = data;
+						option.innerText = data;
+						return option;
+					},
+					getAppendedFragments(elemArr = []) {
+						const df = document.createDocumentFragment();
+						elemArr.forEach(elem => {
+							df.append(elem);
+						})
+						return df;
+					},
+					createVidoeList(list = []) {
+						const root = app, 
+						parent = root.event.set.connection,
+						result = [];
+						list.forEach(fileName => {
+							if(parent.regex.is.mp4Regex(fileName)) {
+								result.push(this.createtOptionElem(fileName));
+							}
+						})
+						return result;
+					}
+				},
+				main() {
+					const root = app;
+					videoList = root.elem.select;
+					
+					window.addEventListener("load", () => {
+						socket.emit("disconnec", (arrData = []) => {
+							arrData = this.methods.createVidoeList(arrData);
+							arrData = this.methods.getAppendedFragments(arrData);
+							videoList.appendChild(arrData);
+							root.methods.setVideoListSelect();
+						});
+					});
+				}
+			},
 			box: {
 				click() {
 					const root = app;
@@ -193,14 +258,14 @@ app = {
 				main() {
 					const root = app,
 					videoElem = root.elem.video,
-					volumeBarButton = root.elem.volumeBarButton,
+					volumeBar = root.elem.volumeBar,
 					soundSwitchButton = root.elem.soundSwitchButton,
 					soundSwitchValue = root.elem.soundSwitchValue;
-					volumeBarButton.addEventListener("input", e => {
+					volumeBar.addEventListener("input", e => {
 						if(videoElem.muted || e.target.value === "0") { soundSwitchButton.click(); }
 						soundSwitchValue.childNodes[0].data = e.target.value;
 						videoElem.volume = Number(e.target.value) / 100;
-					})
+					});
 				}
 			},
 			soundSwitch: {
@@ -252,6 +317,7 @@ app = {
 			},
 		},
 		main() {
+			this.set.connection.main();
 			this.set.box.click();
 			this.set.video.main();
 			this.set.select.change();
@@ -263,7 +329,6 @@ app = {
 		}
 	},
 	main() {
-		this.methods.setVideoListSelect();
 		this.event.main();
 	}
 }

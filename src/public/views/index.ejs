@@ -29,7 +29,7 @@
 			/* height: 100px; */
 			background-color: #333;
 		}
-		#volumeBarButton {
+		#volumeBar {
 			margin: 0px;
 			grid-column: 2/4;
 		}
@@ -66,30 +66,24 @@
 <body>
 	<div id="wrap">
 		<div id="box"></div>
-		<input id="volumeBarButton" type="range" min="0" max="100" value="100">
+		<input id="volumeBar" type="range" min="0" max="100" value="100">
 		<button id="soundSwitchButton">
 			Sound Off
 			<div id="soundSwitchValue">100</div>
 		</button>
 		<button id="fullScreenButton">전체화면</button>
 
-		
-		<!-- <video id="videoDisplay" src="content/1.mp4" controls muted="muted" style="width: 100%;"></video> -->
-		<video id="videoDisplay" src="content/6.mp4" controls muted="muted" style="width: 100%;">
+		<video id="videoDisplay" src="content/test.mp4" controls muted="muted" style="width: 100%;" controlsList="nodownload">
+			<track hidden
+				kind="captions"
+				srclang="TheDarkKnight"
+				src="content/TheDarkKnight.vtt" />
 			<track hidden
 				kind="captions"
 				srclang="kor"
 				src="content/6.vtt" />
 		</video>
-		<select id="videoList">
-			<option value="1.mp4">1.mp4</option>
-			<option value="2.mp4">2.mp4</option>
-			<option value="3.mp4">3.mp4</option>
-			<option value="4.mp4">4.mp4</option>
-			<option value="5.mp4">5.mp4</option>
-			<option value="6.mp4">6.mp4</option>
-			<option value="7.mp4">7.mp4</option>
-		</select>
+		<select id="videoList"></select>
 		<button id="captionButton">자막 꺼짐</button>
 		<button id="reloadButton">새로고침</button>
 	</div>
