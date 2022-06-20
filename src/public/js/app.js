@@ -13,7 +13,14 @@ app = {
 	},
 	elem: {
 		video: document.getElementById("videoDisplay"),
-		select: document.getElementById("videoList")
+		select: document.getElementById("videoList"),
+		fullScreenButton: document.getElementById("fullScreenButton"),
+		reloadButton: document.getElementById("reloadButton"),
+		volumeBarButton: document.getElementById("volumeBarButton"),
+		soundSwitchButton: document.getElementById("soundSwitchButton"),
+		soundSwitchValue: document.getElementById("soundSwitchValue"),
+		captionButton: document.getElementById("captionButton")
+		
 	},
 	methods: {
 		setIsFirstEmit(emitType) {
@@ -36,17 +43,37 @@ app = {
 			selectVideoElem = Array.from(videoList.children)
 			.filter(elem => elem.value === selectVideoElemValue)[0];
 			selectVideoElem.selected = true;
+		},
+		reloadEmit() {
+			socket.emit("reload");
+			location.reload();
+		},
+		requestFullScreen() {
+			const root = app, 
+			videoElem = root.elem.video;
+			if (videoElem.mozRequestFullScreen) {
+				videoElem.mozRequestFullScreen();
+			} else if (videoElem.webkitRequestFullScreen) {
+				videoElem.webkitRequestFullScreen();
+			}
+		},
+		isSetText(elem, isText, onText, offText) {
+			const text = elem.childNodes[0],
+			regex = new RegExp(isText);
+			text.data = regex.test(text.data) ? onText : offText
 		}
 	},
 	event: {
 		methods: {
-			changeBgColor(e) {
-				const targetStyle = e.target.style;
-				targetStyle.backgroundColor = targetStyle.backgroundColor === "red" ? "#333" : "red";
+			changeBgColor(elem, firstColor, secondColor) {
+				const targetStyle = elem.style;
+				targetStyle.backgroundColor 
+					= targetStyle.backgroundColor === secondColor 
+					? firstColor : secondColor;
 			},
 			bgColor(e) {
 				return e.target.style.backgroundColor;
-			},
+			}
 		},
 		set: {
 			box: {
@@ -54,7 +81,7 @@ app = {
 					const root = app;
 					box.addEventListener("click", e => {
 						e.preventDefault();
-						root.event.methods.changeBgColor(e);
+						root.event.methods.changeBgColor(e.target, "#333", "red");
 						socket.emit("click", {
 							id: e.target.id,
 							color: root.event.methods.bgColor(e)
@@ -118,7 +145,7 @@ app = {
 					videoList = root.elem.select, 
 					videoElem = root.elem.video;
 					videoList.addEventListener("change", e => {
-						const value = `${location.href}content/${e.target.value}`
+						const value = `content/${e.target.value}`
 						videoElem.src = value;
 						socket.emit("change", value);
 					});
@@ -128,15 +155,113 @@ app = {
 						root.methods.setVideoListSelect();
 					});
 				}
-			}
+			},
+			reload: {
+				button() {
+					const root = app, 
+					reloadButtonElem = root.elem.reloadButton;
+					reloadButtonElem.addEventListener("click", e => {
+						root.methods.reloadEmit();
+					});
+				},
+				window() {
+					const root = app;
+					socket.on("reload", () => {
+						console.log("reload!");
+						location.reload();
+					});
+					window.addEventListener("keydown", e => {
+						if(e.code === "F5") {
+							e.returnValue = false;
+							root.methods.reloadEmit();
+						}
+					});
+				},
+				main() {
+					this.button();
+					this.window();
+				}
+			},
+			fullScreen() {
+				const root = app, 
+				fullScreenButton = root.elem.fullScreenButton;
+				fullScreenButton.addEventListener("click", e => {
+					root.methods.requestFullScreen();
+				})
+			},
+			volumeBar: {
+				main() {
+					const root = app,
+					videoElem = root.elem.video,
+					volumeBarButton = root.elem.volumeBarButton,
+					soundSwitchButton = root.elem.soundSwitchButton,
+					soundSwitchValue = root.elem.soundSwitchValue;
+					volumeBarButton.addEventListener("input", e => {
+						if(videoElem.muted || e.target.value === "0") { soundSwitchButton.click(); }
+						soundSwitchValue.childNodes[0].data = e.target.value;
+						videoElem.volume = Number(e.target.value) / 100;
+					})
+				}
+			},
+			soundSwitch: {
+				methods: {
+					
+					isSetVideoElemMute() {
+						const root = app, videoElem = root.elem.video;
+						videoElem.muted = videoElem.muted ? false : true;
+					}
+				},
+				main() {
+					const root = app,
+					soundSwitchButton = root.elem.soundSwitchButton;
+					soundSwitchButton.addEventListener("click", () => {
+						root.event.methods.changeBgColor(
+							soundSwitchButton, 
+							"rgb(238, 17, 119)", 
+							"rgb(75, 178, 102)"
+						);
+						root.methods.isSetText(soundSwitchButton, "Off", "Sound On", "Sound Off");
+						this.methods.isSetVideoElemMute();
+					});
+				}
+			},
+			caption: {
+				methods: {
+					isSetCaptionOnOff() {
+						const root = app,
+						videoElem = root.elem.video,
+						textTrack = videoElem.textTracks[0];
+						textTrack.mode 
+						= textTrack.mode === "showing"
+						? "hidden" : "showing";
+					}
+				},
+				main() {
+					const root = app,
+					captionButton = root.elem.captionButton;
+					captionButton.addEventListener("click", e => {
+						root.event.methods.changeBgColor(
+							captionButton, 
+							"rgb(238, 17, 119)", 
+							"rgb(75, 178, 102)"
+						);
+						root.methods.isSetText(captionButton, "꺼짐", "자막 켜짐", "자막 꺼짐");
+						this.methods.isSetCaptionOnOff();
+					});
+				}
+			},
 		},
 		main() {
 			this.set.box.click();
 			this.set.video.main();
 			this.set.select.change();
+			this.set.reload.main();
+			this.set.fullScreen();
+			this.set.volumeBar.main();
+			this.set.soundSwitch.main();
+			this.set.caption.main();
 		}
 	},
-
 	main() {
 		this.methods.setVideoListSelect();
 		this.event.main();

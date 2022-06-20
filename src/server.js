@@ -48,6 +48,13 @@ const server = {
 							socket.broadcast.emit("change", value);
 						});
 					}
+				},
+				reload: {
+					window(socket) {
+						socket.on("reload", () => {
+							socket.broadcast.emit("reload");
+						});
+					}
 				}
 			},
 			main() {
@@ -58,6 +65,7 @@ const server = {
 					this.on.video.add(socket, "pause");
 					this.on.video.add(socket, "seeked");
 					this.on.select.change(socket);
+					this.on.reload.window(socket);
 				});
 			}
 		},

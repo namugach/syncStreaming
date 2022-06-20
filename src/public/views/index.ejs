@@ -4,22 +4,95 @@
 	<link rel="shortcut icon" href="#">
 	<meta charset="UTF-8">
 	<title>Document</title>
+	<link rel="stylesheet" href="mvp.css">
 	<style>
+		#reloadButton, #soundSwitchButton, 
+		#captionButton, #fullScreenButton, #videoList {
+			font-size: 30px;
+		}
+		body {
+			background-color: #222222;
+			margin: 5px;
+		}
+		button {
+			margin: 0px;
+			padding: 5px;
+		}
+		#wrap {
+			display: grid;
+			grid-gap: 5px;
+			grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+			grid-template-rows: 100px auto 100px;
+		}
 		#box {
-			width: 100px;
-			height: 100px;
+			/* width: 100px; */
+			/* height: 100px; */
 			background-color: #333;
 		}
+		#volumeBarButton {
+			margin: 0px;
+			grid-column: 2/4;
+		}
+		#soundSwitchButton {
+			background-color: #ee1177;
+		}
+		#fullScreenButton {
+			grid-column: 5;
+		}
+		#videoDisplay {
+			grid-row: 2;
+			grid-column: 1/-1;
+		}
+		video::cue { 
+			font-size: 2.2rem !important;
+		}
+		#videoList {
+			grid-row: 3;
+			grid-column: 1/4;
+			margin: 0px;
+		}
+		#captionButton {
+			background-color: #ee1177;
+			grid-column: 4;
+			grid-row: 3;
+		}
+		#reloadButton {
+			grid-column: 5;
+			grid-row: 3;
+		}
+		
 	</style>
 </head>
 <body>
-	<div id="box"></div>
-	<video id="videoDisplay" src="content/2.mp4" controls muted="muted" style="width: 100%;"></video>
-	<select id="videoList">
-		<option value="1.mp4">1.mp4</option>
-		<option value="2.mp4">2.mp4</option>
-		<option value="3.mp4">3.mp4</option>
-	</select>
+	<div id="wrap">
+		<div id="box"></div>
+		<input id="volumeBarButton" type="range" min="0" max="100" value="100">
+		<button id="soundSwitchButton">
+			Sound Off
+			<div id="soundSwitchValue">100</div>
+		</button>
+		<button id="fullScreenButton">전체화면</button>
+
+		
+		<!-- <video id="videoDisplay" src="content/1.mp4" controls muted="muted" style="width: 100%;"></video> -->
+		<video id="videoDisplay" src="content/6.mp4" controls muted="muted" style="width: 100%;">
+			<track hidden
+				kind="captions"
+				srclang="kor"
+				src="content/6.vtt" />
+		</video>
+		<select id="videoList">
+			<option value="1.mp4">1.mp4</option>
+			<option value="2.mp4">2.mp4</option>
+			<option value="3.mp4">3.mp4</option>
+			<option value="4.mp4">4.mp4</option>
+			<option value="5.mp4">5.mp4</option>
+			<option value="6.mp4">6.mp4</option>
+			<option value="7.mp4">7.mp4</option>
+		</select>
+		<button id="captionButton">자막 꺼짐</button>
+		<button id="reloadButton">새로고침</button>
+	</div>
 	<script src="/socket.io/socket.io.js"></script>
 	<script src="js/app.js"></script>
 </body>
