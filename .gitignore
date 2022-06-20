@@ -1,2 +1,4 @@
 /node_modules
 content
+src/public/content/*
+src/public/pri

@@ -94,10 +94,11 @@ app = {
 			connection: {
 				regex: {
 					mp4Regex: /\.mp4$/,
+					mp3Regex: /\.mp3$/,
 					is: {
-						mp4Regex(string) {
+						mp3mp4Regex(string) {
 							const root = app, parent = root.event.set.connection.regex;
-							return parent.mp4Regex.test(string);
+							return parent.mp4Regex.test(string) || parent.mp3Regex.test(string);
 						}
 					}
 				},
@@ -120,7 +121,7 @@ app = {
 						parent = root.event.set.connection,
 						result = [];
 						list.forEach(fileName => {
-							if(parent.regex.is.mp4Regex(fileName)) {
+							if(parent.regex.is.mp3mp4Regex(fileName)) {
 								result.push(this.createtOptionElem(fileName));
 							}
 						})

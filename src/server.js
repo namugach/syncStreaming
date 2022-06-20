@@ -86,10 +86,11 @@ const server = {
 		},
 	},
 	methods: {
+		port: 5000,
 		serverStart() {
 			const root = server;
 			root.instance.httpServer.listen(
-				3000, () => console.log("Listening on http://localhost:3000")
+				this.port, () => console.log(`Listening on http://localhost:${this.port}`)
 			);
 		}
 	},
