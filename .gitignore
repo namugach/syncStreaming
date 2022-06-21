@@ -1,4 +1,4 @@
 /node_modules
+.vscode
 content
 src/public/content/*
-src/public/pri

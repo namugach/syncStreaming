@@ -1,5 +1,5 @@
 {
-  "name": "6.socket_streaming",
+  "name": "sync_streaming",
   "version": "1.0.0",
   "scripts": {
     "dev": "nodemon"
